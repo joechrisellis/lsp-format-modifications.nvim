@@ -162,21 +162,12 @@ M.attach = function(client, bufnr, provided_config)
   ctx[client.id] = config
 
   vim.b[bufnr].lsp_format_modifications_context = ctx
-end
-
-local setup_done = false
-M.setup = function()
-  if setup_done then
-    return
-  end
 
   vim.api.nvim_create_user_command(
     "FormatModifications",
     M.format_modifications_current_buffer,
     {}
   )
-
-  setup_done = true
 end
 
 return M
