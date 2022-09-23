@@ -24,7 +24,7 @@ find an analog for in Neovim. Hence, this plugin!
 
 # Getting started
 
-## Required dependencies
+## Requirements
 
 - **Neovim ≥0.8 is required**. Neovim 0.8 has a more flexible API for LSP
   formatting, which this plugin leverages.
@@ -40,7 +40,7 @@ Plug 'nvim-lua/plenary.nvim'
 Plug 'joechrisellis/lsp-format-modifications.nvim'
 ```
 
-## Configuration
+## Configuration and usage
 
 In your [neovim/nvim-lspconfig][nvim-lspconfig] `on_attach` function:
 
