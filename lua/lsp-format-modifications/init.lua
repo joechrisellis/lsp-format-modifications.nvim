@@ -16,7 +16,7 @@ local base_config = {
   },
 
   -- the callback used to actually format the hunks
-  format_callback = vim.lsp.buf.format,
+  format_callback = vim.lsp.buf.format, -- NOTE: requires 0.8
 
   -- if true, set up a BufWritePre autocmd to format on save
   format_on_save = false,
