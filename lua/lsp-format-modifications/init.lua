@@ -64,7 +64,7 @@ M.format_modifications = function(client, bufnr, config)
   while not(done) do
     done = true
 
-    local buf_lines = vim.api.nvim_buf_get_lines(bufnr, 0, vim.api.nvim_buf_line_count(bufnr), false)
+    local buf_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
     local buf_content = table.concat(buf_lines, "\n")
 
     local hunks = vim.diff(
@@ -91,7 +91,7 @@ M.format_modifications = function(client, bufnr, config)
         }
       }
 
-      local new_buf_lines = vim.api.nvim_buf_get_lines(bufnr, 0, vim.api.nvim_buf_line_count(bufnr), false)
+      local new_buf_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
       local new_buf_content = table.concat(new_buf_lines, "\n")
 
       if buf_content ~= new_buf_content then -- the formatter changed something
