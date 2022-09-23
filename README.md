@@ -28,6 +28,11 @@ find an analog for in Neovim. Hence, this plugin!
 
 - **Neovim ≥0.8 is required**. Neovim 0.8 has a more flexible API for LSP
   formatting, which this plugin leverages.
+- Any LSP server that you want to use with this plugin must support the
+  [`DocumentRangeFormattingProvider` server
+  capability][document-range-formatting-provider-capability] —
+  `lsp-format-modifications.nvim` will warn if an unsupported LSP server is
+  used.
 - [nvim-lua/plenary.nvim][plenary.nvim] is required (hint: you are probably
   already using this).
 
@@ -62,3 +67,4 @@ changed regions on save).
 [plenary.nvim]: https://github.com/nvim-lua/plenary.nvim
 [vim-plug]: https://github.com/junegunn/vim-plug
 [vscode-format-modifications-issue]: https://github.com/Microsoft/vscode/issues/44075
+[document-range-formatting-provider-capability]: https://learn.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.languageserver.protocol.servercapabilities.documentrangeformattingprovider?view=visualstudiosdk-2022
