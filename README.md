@@ -52,6 +52,10 @@ local on_attach = function(client, bufnr)
 end
 ```
 
+You can then use `:FormatModifications` to format modified text regions in the
+current buffer (or, set `format_on_save` to `true` to automatically format
+changed regions on save).
+
 [nvim-lspconfig]: https://github.com/neovim/nvim-lspconfig
 [plenary.nvim]: https://github.com/nvim-lua/plenary.nvim
 [vim-plug]: https://github.com/junegunn/vim-plug
