@@ -26,6 +26,8 @@ find an analog for in Neovim. Hence, this plugin!
 
 ## Required dependencies
 
+- **Neovim ≥0.8 is required**. Neovim 0.8 has a more flexible API for LSP
+  formatting, which this plugin leverages.
 - [nvim-lua/plenary.nvim][plenary.nvim] is required (hint: you are probably
   already using this).
 
