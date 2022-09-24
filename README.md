@@ -68,3 +68,19 @@ changed regions on save).
 [vim-plug]: https://github.com/junegunn/vim-plug
 [vscode-format-modifications-issue]: https://github.com/Microsoft/vscode/issues/44075
 [document-range-formatting-provider-capability]: https://learn.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.languageserver.protocol.servercapabilities.documentrangeformattingprovider?view=visualstudiosdk-2022
+
+## Caveats and issues
+
+**Please raise an issue if something is wrong — but read this section first.**
+
+In my experience with LSP, I've found that most language servers have imperfect
+support for range formatting. A lot of the time, selecting and formatting a
+range results in the formatter also capturing some of the surrounding text. I'm
+not totally sure why this is, but the upshot is that _for some language
+servers, `:FormatModifications` might capture more than just the lines in the
+hunk_. This is usually not a big deal.
+
+A good way to test whether `lsp-format-modifications.nvim` is playing up, or
+whether it's just your language server, is to visually select the changed range
+and hit `gq` (invoking `formatexpr`). If you see the same problem, it's more
+likely to be problem with your language server.
