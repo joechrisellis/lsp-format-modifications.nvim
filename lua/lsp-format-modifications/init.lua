@@ -80,7 +80,7 @@ M.format_modifications = function(client, bufnr, config)
       end
 
       start_line, end_line = new_start, new_start + new_count - 1
-      start_col, end_col = 0, -1
+      start_col, end_col = 0, #buf_lines[end_line] - 1
 
       config.format_callback{
         id = client.id,
