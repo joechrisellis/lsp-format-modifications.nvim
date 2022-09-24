@@ -84,3 +84,10 @@ A good way to test whether `lsp-format-modifications.nvim` is playing up, or
 whether it's just your language server, is to visually select the changed range
 and hit `gq` (invoking `formatexpr`). If you see the same problem, it's more
 likely to be problem with your language server.
+
+## Tested language servers
+
+| Language server | Works with `lsp-format-modifications.nvim`? | More info |
+| --------------- | ------------------------------------------- | --------- |
+| `clangd`        | ✅                                          |           |
+| `tsserver`      | ✅                                          |           |
