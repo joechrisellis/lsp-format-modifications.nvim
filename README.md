@@ -81,10 +81,11 @@ likely to be problem with your language server.
 
 ## Tested language servers
 
-| Language server | Works with `lsp-format-modifications.nvim`? | More info |
-| --------------- | ------------------------------------------- | --------- |
-| `clangd`        | ✅                                          |           |
-| `tsserver`      | ✅                                          |           |
+| Language server | Works with `lsp-format-modifications.nvim`? | More info                                                                                                                                                                                       |
+| --------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clangd`        | ✅                                          |                                                                                                                                                                                                 |
+| `tsserver`      | ✅                                          |                                                                                                                                                                                                 |
+| `null_ls`       | ✅                                          | See [this issue](https://github.com/joechrisellis/lsp-format-modifications.nvim/issues/1#issuecomment-1275302811) for how to get set up — only sources that support range formatting will work. |
 
 [nvim-lspconfig]: https://github.com/neovim/nvim-lspconfig
 [plenary.nvim]: https://github.com/nvim-lua/plenary.nvim
