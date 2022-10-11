@@ -63,12 +63,6 @@ You can then use `:FormatModifications` to format modified text regions in the
 current buffer (or, set `format_on_save` to `true` to automatically format
 changed regions on save).
 
-[nvim-lspconfig]: https://github.com/neovim/nvim-lspconfig
-[plenary.nvim]: https://github.com/nvim-lua/plenary.nvim
-[vim-plug]: https://github.com/junegunn/vim-plug
-[vscode-format-modifications-issue]: https://github.com/Microsoft/vscode/issues/44075
-[document-range-formatting-provider-capability]: https://learn.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.languageserver.protocol.servercapabilities.documentrangeformattingprovider?view=visualstudiosdk-2022
-
 ## Caveats and issues
 
 **Please raise an issue if something is wrong — but read this section first.**
@@ -91,3 +85,9 @@ likely to be problem with your language server.
 | --------------- | ------------------------------------------- | --------- |
 | `clangd`        | ✅                                          |           |
 | `tsserver`      | ✅                                          |           |
+
+[nvim-lspconfig]: https://github.com/neovim/nvim-lspconfig
+[plenary.nvim]: https://github.com/nvim-lua/plenary.nvim
+[vim-plug]: https://github.com/junegunn/vim-plug
+[vscode-format-modifications-issue]: https://github.com/Microsoft/vscode/issues/44075
+[document-range-formatting-provider-capability]: https://learn.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.languageserver.protocol.servercapabilities.documentrangeformattingprovider?view=visualstudiosdk-2022
