@@ -123,7 +123,7 @@ M.format_modifications_current_buffer = function()
   end
 
   for client_id, config in pairs(ctx) do
-    local client = vim.lsp.get_client_by_id(client_id)
+    local client = vim.lsp.get_client_by_id(tonumber(client_id))
     M.format_modifications(client, bufnr, config)
   end
 end
@@ -159,7 +159,7 @@ M.attach = function(client, bufnr, provided_config)
 
   local ctx = vim.b[bufnr].lsp_format_modifications_context
   ctx = vim.F.if_nil(ctx, {})
-  ctx[client.id] = config
+  ctx[tostring(client.id)] = config
 
   vim.b[bufnr].lsp_format_modifications_context = ctx
 
