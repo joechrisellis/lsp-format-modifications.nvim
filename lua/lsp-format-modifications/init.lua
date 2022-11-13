@@ -50,8 +50,6 @@ M.format_modifications = function(client, bufnr, config)
   end
 
   local comparee_lines, err = vcs_client:get_comparee_lines(bufname)
-  local comparee_content = table.concat(comparee_lines, "\n")
-
   if err ~= nil then
     util.notify(
       "failed to get comparee, " .. err .. " -- consider raising a GitHub issue",
@@ -59,6 +57,8 @@ M.format_modifications = function(client, bufnr, config)
     )
     return
   end
+
+  local comparee_content = table.concat(comparee_lines, "\n")
 
   local done = false
   while not(done) do
