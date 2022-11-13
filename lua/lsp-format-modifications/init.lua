@@ -39,7 +39,8 @@ M.format_modifications = function(client, bufnr, config)
     return
   end
 
-  if not(vcs_client:is_file_tracked(bufname)) then
+  local file_info = vcs_client:file_info(bufname)
+  if not(file_info.is_tracked) then
     -- easiest case: the file is new, so skip the whole dance and format
     -- everything
     config.format_callback{

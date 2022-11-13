@@ -67,14 +67,50 @@ function GitClient:relativize(pathstr)
   return absolute_pathstr:sub(#self.repository_root + #Path.path.sep + 1)
 end
 
-function GitClient:is_file_tracked(pathstr)
+function GitClient:file_info(pathstr)
   local result = cmd{
     command = "git",
     cwd = self.repository_root,
-    args = { "--literal-pathspecs", "ls-files", "--error-unmatch", self:relativize(pathstr) }
+    args = {
+      "-c", "core.quotepath=off",
+      "ls-files",
+      "--stage",
+      "--others",
+      "--exclude-standard",
+      "--eol",
+      self:relativize(pathstr)
+    }
   }
 
-  return result.exitcode == 0
+  if result.exitcode ~= 0 then
+    return nil, "failed to get file information for " .. pathstr -- TODO: more robust?
+  end
+
+  local file_info = {}
+  for _, line in ipairs(result.stdout) do
+    local parts = vim.split(line, '\t')
+
+    file_info.is_tracked = #parts > 2
+
+    if file_info.is_tracked then
+      local eol = vim.split(parts[2], '%s+')
+      file_info.i_crlf = eol[1] == 'i/crlf'
+      file_info.w_crlf = eol[2] == 'w/crlf'
+      file_info.relpath = parts[3]
+      local attrs = vim.split(parts[1], '%s+')
+      local stage = tonumber(attrs[3])
+      if stage <= 1 then
+          file_info.mode_bits   = attrs[1]
+          file_info.object_name = attrs[2]
+      else
+          file_info.has_conflicts = true
+      end
+    else -- untracked file
+      file_info.relpath = parts[2]
+    end
+  end
+
+  return file_info
 end
 
 function GitClient:get_comparee_lines(pathstr)
