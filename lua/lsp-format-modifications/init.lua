@@ -50,6 +50,14 @@ M.format_modifications = function(client, bufnr, config)
     return
   end
 
+  if file_info.has_conflicts then
+    -- the file is marked as conflicted, so it probably has conflict markers.
+    -- don't do anything to avoid screwing things up.
+    return
+    -- TODO: we should probably calculate the diff between the file on-disk and
+    -- the common ancestor here
+  end
+
   local comparee_lines, err = vcs_client:get_comparee_lines(bufname)
   if err ~= nil then
     util.notify(
