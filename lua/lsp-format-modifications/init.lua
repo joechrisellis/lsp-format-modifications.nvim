@@ -25,7 +25,7 @@ local base_config = {
   vcs = "git"
 }
 
-M.format_modifications = function(client, bufnr, config)
+M.format_modifications = function(lsp_client, bufnr, config)
   local bufname = vim.fn.bufname(bufnr)
 
   local vcs_client = vcs[config.vcs]:new()
@@ -44,7 +44,7 @@ M.format_modifications = function(client, bufnr, config)
     -- easiest case: the file is new, so skip the whole dance and format
     -- everything
     config.format_callback{
-      id = client.id,
+      id = lsp_client.id,
       bufnr = bufnr
     }
     return
@@ -92,7 +92,7 @@ M.format_modifications = function(client, bufnr, config)
       start_col, end_col = 0, #buf_lines[end_line] - 1
 
       config.format_callback{
-        id = client.id,
+        id = lsp_client.id,
         bufnr = bufnr,
         range = {
           start = { start_line, start_col },
@@ -132,15 +132,15 @@ M.format_modifications_current_buffer = function()
   end
 
   for client_id, config in pairs(ctx) do
-    local client = vim.lsp.get_client_by_id(tonumber(client_id))
-    M.format_modifications(client, bufnr, config)
+    local lsp_client = vim.lsp.get_client_by_id(tonumber(client_id))
+    M.format_modifications(lsp_client, bufnr, config)
   end
 end
 
-M.attach = function(client, bufnr, provided_config)
-  if not client.server_capabilities.documentRangeFormattingProvider then -- unsupported server
+M.attach = function(lsp_client, bufnr, provided_config)
+  if not lsp_client.server_capabilities.documentRangeFormattingProvider then -- unsupported server
     util.notify(
-      "client " .. client.name .. " does not have a document range formatting provider",
+      "client " .. lsp_client.name .. " does not have a document range formatting provider",
       vim.log.levels.WARN
     )
     return
@@ -168,7 +168,7 @@ M.attach = function(client, bufnr, provided_config)
 
   local ctx = vim.b[bufnr].lsp_format_modifications_context
   ctx = vim.F.if_nil(ctx, {})
-  ctx[tostring(client.id)] = config
+  ctx[tostring(lsp_client.id)] = config
 
   vim.b[bufnr].lsp_format_modifications_context = ctx
 
