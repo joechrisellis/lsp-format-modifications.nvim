@@ -137,17 +137,33 @@ M.format_modifications_current_buffer = function()
   end
 end
 
-M.attach = function(lsp_client, bufnr, provided_config)
+local function attach_prechecks(lsp_client, bufnr, config)
   if not lsp_client.server_capabilities.documentRangeFormattingProvider then -- unsupported server
+    return "client " .. lsp_client.name .. " does not have a document range formatting provider"
+  end
+
+  if vcs[config.vcs] == nil then -- unsupported VCS
+    return "VCS " .. config.vcs .. " isn't supported"
+  end
+
+  return nil
+end
+
+M.attach = function(lsp_client, bufnr, provided_config)
+  provided_config = vim.F.if_nil(provided_config, {})
+  local config = vim.tbl_extend("force", base_config, provided_config)
+
+  -- pre-flight checks
+  local err = attach_prechecks(lsp_client, bufnr, config)
+  if err ~= nil then
     util.notify(
-      "client " .. lsp_client.name .. " does not have a document range formatting provider",
-      vim.log.levels.WARN
+      "failed checks: " .. err,
+      vim.log.levels.ERROR
     )
     return
   end
 
-  provided_config = vim.F.if_nil(provided_config, {})
-  local config = vim.tbl_extend("force", base_config, provided_config)
+  print(vim.inspect(config))
 
   if config.format_on_save then
     local augroup_id = vim.api.nvim_create_augroup(
