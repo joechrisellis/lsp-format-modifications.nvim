@@ -163,8 +163,6 @@ M.attach = function(lsp_client, bufnr, provided_config)
     return
   end
 
-  print(vim.inspect(config))
-
   if config.format_on_save then
     local augroup_id = vim.api.nvim_create_augroup(
       "NvimFormatModificationsDocumentFormattingGroup",
