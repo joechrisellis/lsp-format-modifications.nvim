@@ -130,4 +130,85 @@ end
 
 M.git = GitClient
 
+local HgClient = {}
+
+function HgClient:new(o)
+  o = o or {}
+  setmetatable(o, self)
+  self.__index = self
+  return o
+end
+
+function HgClient:init(pathstr)
+  local absolute_pathstr = vim.fn.fnamemodify(pathstr, ':p')
+  local hg_cwd = vim.fn.fnamemodify(pathstr, ':h')
+
+  local result = cmd {
+    command = 'hg',
+    cwd = hg_cwd,
+    args = { 'root' }
+  }
+
+  if result.exitcode ~= 0 then
+    return "not inside a hg repository"
+  end
+
+  self.repository_root = table.concat(result.stdout, "\n")
+   
+  return nil
+end
+
+function HgClient:relativize(pathstr)
+  local absolute_pathstr = vim.fn.fnamemodify(pathstr, ':p')
+  return absolute_pathstr:sub(#self.repository_root + #Path.path.sep + 1)
+end
+
+function HgClient:file_info(pathstr)
+  local result = cmd {
+    command = 'hg',
+    cwd = self.repository_root,
+    args = {
+      'files',
+      '--',
+      self:relativize(pathstr)
+    }
+  }
+
+  if result.exitcode ~= 0 then
+    return { is_tracked = false }
+  end
+
+  local file_info = {}
+  file_info.is_tracked = #result.stdout > 0
+  local line = result.stdout[1]
+  file_info.i_crlf = true -- TODO
+  file_info.w_crlf = true -- TODO
+  file_info.relpath = vim.trim(line)
+  file_info.mode_bits = '100644' -- TODO
+  file_info.object_name = vim.trim(line)
+
+  return file_info
+end
+
+function HgClient:get_comparee_lines(pathstr)
+  local result = cmd {
+    command = 'hg',
+    cwd = self.repository_root,
+    args = {
+      'cat',
+      '--',
+      self:relativize(pathstr),
+    }
+  }
+
+  if result.exitcode ~= 0 then
+    return nil, "exit code from hg cat is non-zero"
+  end
+
+  local comparee_lines = result.stdout
+  return comparee_lines
+end
+
+M.hg = HgClient
+
 return M
