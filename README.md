@@ -79,6 +79,17 @@ whether it's just your language server, is to visually select the changed range
 and hit `gq` (invoking `formatexpr`). If you see the same problem, it's more
 likely to be problem with your language server.
 
+## Supported VCSs
+
+| VCS                        | Works with `lsp-format-modifications.nvim`? | More info                                                                                       |
+| -------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| [Git][git-vcs]             | ✅                                          |                                                                                                 |
+| [Mercurial][mercurial-vcs] | ✅                                          | Implemented in [this PR](https://github.com/joechrisellis/lsp-format-modifications.nvim/pull/3) |
+
+Adding support for a new VCS is fairly simple (see [this
+PR](https://github.com/joechrisellis/lsp-format-modifications.nvim/pull/3) for
+an example) — pull requests supporting new VCSsan example are very welcome.
+
 ## Tested language servers
 
 | Language server | Works with `lsp-format-modifications.nvim`? | More info                                                                                                                                                                                       |
@@ -87,6 +98,8 @@ likely to be problem with your language server.
 | `tsserver`      | ✅                                          |                                                                                                                                                                                                 |
 | `null_ls`       | ✅                                          | See [this issue](https://github.com/joechrisellis/lsp-format-modifications.nvim/issues/1#issuecomment-1275302811) for how to get set up — only sources that support range formatting will work. |
 
+[git-vcs]: https://git-scm.com
+[mercurial-vcs]: https://www.mercurial-scm.org
 [nvim-lspconfig]: https://github.com/neovim/nvim-lspconfig
 [plenary.nvim]: https://github.com/nvim-lua/plenary.nvim
 [vim-plug]: https://github.com/junegunn/vim-plug
