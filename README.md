@@ -63,6 +63,31 @@ You can then use `:FormatModifications` to format modified text regions in the
 current buffer (or, set `format_on_save` to `true` to automatically format
 changed regions on save).
 
+### Options
+
+A complete configuration table is below:
+
+```lua
+local config = {
+  diff_options = {
+    -- ... the diff options that are passed to vim.diff.
+    -- Has sensible defaults. You _probably_ don't want to change these.
+  },
+
+  -- The callback that is invoked to actually do the formatting on the changed
+  -- hunks. Defaults to vim.lsp.buf.format (requires Neovim ≥ 0.8).
+  format_callback = vim.lsp.buf.format,
+
+  -- If set to true, an autocommand will be created to automatically format
+  -- modifications on save. Defaults to false. This is provided merely for
+  -- convenience so that you don't have to create the autocommand yourself.
+  format_on_save = false,
+
+  -- The VCS to use. Possible options are: "git", "hg". Defaults to "git".
+  vcs = "git"
+}
+```
+
 ## Caveats and issues
 
 **Please raise an issue if something is wrong — but read this section first.**
