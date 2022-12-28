@@ -69,10 +69,11 @@ A complete configuration table is below:
 
 ```lua
 local config = {
-  diff_options = {
-    -- ... the diff options that are passed to vim.diff.
-    -- Has sensible defaults. You _probably_ don't want to change these.
-  },
+  -- The callback that is invoked to compute a diff so that we know what to
+  -- format. This defaults to vim.diff with some sensible defaults.
+  diff_callback = function(compareee_content, buf_content)
+    return vim.diff(compareee_content, buf_content, {...})
+  end,
 
   -- The callback that is invoked to actually do the formatting on the changed
   -- hunks. Defaults to vim.lsp.buf.format (requires Neovim ≥ 0.8).

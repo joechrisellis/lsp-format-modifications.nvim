@@ -5,15 +5,22 @@ local util = require"lsp-format-modifications.util"
 local vcs = require"lsp-format-modifications.vcs"
 
 local base_config = {
-  -- options passed to Vim's internal diff algorithm
-  diff_options = {
-    result_type = "indices", -- don't change this
-    algorithm = "patience",
-    ctxlen = 0,
-    interhunkctxlen = 0,
-    indent_heuristic = true,
-    ignore_cr_at_eol = true
-  },
+  -- the callback used to compute a diff between the comparee and the buffer
+  -- content
+  diff_callback = function(comparee_content, buf_content)
+    return vim.diff(
+      comparee_content,
+      buf_content,
+      {
+        result_type = "indices",
+        algorithm = "patience",
+        ctxlen = 0,
+        interhunkctxlen = 0,
+        indent_heuristic = true,
+        ignore_cr_at_eol = true
+      }
+    )
+  end,
 
   -- the callback used to actually format the hunks
   format_callback = vim.lsp.buf.format, -- NOTE: requires 0.8
@@ -76,11 +83,7 @@ M.format_modifications = function(lsp_client, bufnr, config)
     local buf_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
     local buf_content = table.concat(buf_lines, "\n")
 
-    local hunks = vim.diff(
-      comparee_content,
-      buf_content,
-      config.diff_options
-    )
+    local hunks = config.diff_callback(comparee_content, buf_content)
 
     for _, hunk in ipairs(hunks) do
       old_start, old_count, new_start, new_count = unpack(hunk)
@@ -144,6 +147,10 @@ local function attach_prechecks(lsp_client, bufnr, config)
 
   if vcs[config.vcs] == nil then -- unsupported VCS
     return "VCS " .. config.vcs .. " isn't supported"
+  end
+
+  if config.diff_options ~= nil then -- old option, report deprecated
+    return "diff_options is deprecated, use diff_callback instead"
   end
 
   return nil
