@@ -154,7 +154,7 @@ function HgClient:init(pathstr)
   end
 
   self.repository_root = table.concat(result.stdout, "\n")
-   
+
   return nil
 end
 
