@@ -31,7 +31,11 @@ local base_config = {
   format_on_save = false,
 
   -- the vcs being used
-  vcs = "git"
+  vcs = "git",
+
+  -- EXPERIMENTAL: when true, do not attempt formatting on the outermost empty
+  -- lines in diff hunks, and do not touch hunks consisting of entirely empty lines
+  experimental_empty_line_handling = false
 }
 
 M.format_modifications = function(lsp_client, bufnr, config)
@@ -94,6 +98,20 @@ M.format_modifications = function(lsp_client, bufnr, config)
       end
 
       local start_line, end_line = new_start, new_start + new_count - 1
+
+      if config.experimental_empty_line_handling then
+        while start_line ~= end_line and buf_lines[start_line] == "" do
+          start_line = start_line + 1
+        end
+        while start_line ~= end_line and buf_lines[end_line] == "" do
+          end_line = end_line - 1
+        end
+
+        if buf_lines[start_line] == "" then
+          goto next_hunk
+        end
+      end
+
       local start_col, end_col = 0, #buf_lines[end_line] - 1
 
       config.format_callback{
