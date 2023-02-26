@@ -86,13 +86,13 @@ M.format_modifications = function(lsp_client, bufnr, config)
     local hunks = config.diff_callback(comparee_content, buf_content)
 
     for _, hunk in ipairs(hunks) do
-      old_start, old_count, new_start, new_count = unpack(hunk)
+      local old_start, old_count, new_start, new_count = unpack(hunk)
       if new_count == 0 then -- lines were removed, nothing to do for this hunk
         goto next_hunk
       end
 
-      start_line, end_line = new_start, new_start + new_count - 1
-      start_col, end_col = 0, #buf_lines[end_line] - 1
+      local start_line, end_line = new_start, new_start + new_count - 1
+      local start_col, end_col = 0, #buf_lines[end_line] - 1
 
       config.format_callback{
         id = lsp_client.id,
