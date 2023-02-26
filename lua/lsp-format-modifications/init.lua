@@ -4,6 +4,15 @@ local M = {}
 local util = require"lsp-format-modifications.util"
 local vcs = require"lsp-format-modifications.vcs"
 
+M.default_diff_opts = {
+  result_type = "indices",
+  algorithm = "patience",
+  ctxlen = 0,
+  interhunkctxlen = 0,
+  indent_heuristic = true,
+  ignore_cr_at_eol = true,
+}
+
 local base_config = {
   -- the callback used to compute a diff between the comparee and the buffer
   -- content
@@ -11,14 +20,7 @@ local base_config = {
     return vim.diff(
       comparee_content,
       buf_content,
-      {
-        result_type = "indices",
-        algorithm = "patience",
-        ctxlen = 0,
-        interhunkctxlen = 0,
-        indent_heuristic = true,
-        ignore_cr_at_eol = true
-      }
+      M.default_diff_opts
     )
   end,
 
