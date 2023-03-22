@@ -85,7 +85,12 @@ local config = {
   format_on_save = false,
 
   -- The VCS to use. Possible options are: "git", "hg". Defaults to "git".
-  vcs = "git"
+  vcs = "git",
+
+  -- EXPERIMENTAL: when true, do not attempt to format the outermost empty
+  -- lines in diff hunks, and do not touch hunks consisting of entirely empty
+  -- lines. For some LSP servers, this can result in more intuitive behaviour.
+  experimental_empty_line_handling = false
 }
 ```
 
