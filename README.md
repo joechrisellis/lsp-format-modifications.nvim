@@ -119,7 +119,7 @@ likely to be problem with your language server.
 
 Adding support for a new VCS is fairly simple (see [this
 PR](https://github.com/joechrisellis/lsp-format-modifications.nvim/pull/3) for
-an example) — pull requests supporting new VCSsan example are very welcome.
+an example) — pull requests are very welcome.
 
 ## Tested language servers
 
