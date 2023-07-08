@@ -56,6 +56,15 @@ end
 
 
 M.format_modifications = function(lsp_client, bufnr, config)
+  local err = prechecks(lsp_client, bufnr, config)
+  if err ~= nil then
+    util.notify(
+      "failed checks: " .. err,
+      vim.log.levels.ERROR
+    )
+    return
+  end
+
   local bufname = vim.fn.bufname(bufnr)
 
   local vcs_client = vcs[config.vcs]:new()
