@@ -180,8 +180,13 @@ M.format_modifications_buffer = function(bufnr)
 
   for client_id, config in pairs(ctx) do
     local lsp_client = vim.lsp.get_client_by_id(tonumber(client_id))
-    M.format_modifications(lsp_client, bufnr, config)
+    local success = M.format_modifications(lsp_client, bufnr, config)
+    if not success then
+      return false
+    end
   end
+
+  return true
 end
 
 M.format_modifications_current_buffer = function()
