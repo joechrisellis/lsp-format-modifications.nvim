@@ -205,7 +205,9 @@ M.attach = function(lsp_client, bufnr, provided_config)
       {
         group = augroup_id,
         buffer = bufnr,
-        callback = M.format_modifications_current_buffer,
+        callback = function()
+          M.format_modifications_buffer(bufnr)
+        end,
       }
     )
   end
