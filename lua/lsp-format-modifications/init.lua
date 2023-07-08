@@ -140,9 +140,7 @@ M.format_modifications = function(lsp_client, bufnr, config)
   end
 end
 
-M.format_modifications_current_buffer = function()
-  local bufnr = vim.fn.bufnr("%") -- work on the current buffer
-
+M.format_modifications_buffer = function(bufnr)
   local ctx = vim.b[bufnr].lsp_format_modifications_context
   if ctx == nil then
     -- ... attaching to the buffer has either not been performed via attach, or
@@ -158,6 +156,11 @@ M.format_modifications_current_buffer = function()
     local lsp_client = vim.lsp.get_client_by_id(tonumber(client_id))
     M.format_modifications(lsp_client, bufnr, config)
   end
+end
+
+M.format_modifications_current_buffer = function()
+  local bufnr = vim.fn.bufnr("%") -- work on the current buffer
+  return M.format_modifications_buffer(bufnr)
 end
 
 local function attach_prechecks(lsp_client, bufnr, config)
