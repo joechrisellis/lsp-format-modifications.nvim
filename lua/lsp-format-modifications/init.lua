@@ -38,6 +38,23 @@ local base_config = {
   experimental_empty_line_handling = false
 }
 
+local function prechecks(lsp_client, bufnr, config)
+  if not lsp_client.server_capabilities.documentRangeFormattingProvider then -- unsupported server
+    return "client " .. lsp_client.name .. " does not have a document range formatting provider"
+  end
+
+  if vcs[config.vcs] == nil then -- unsupported VCS
+    return "VCS " .. config.vcs .. " isn't supported"
+  end
+
+  if config.diff_options ~= nil then -- old option, report deprecated
+    return "diff_options is deprecated, use diff_callback instead"
+  end
+
+  return nil
+end
+
+
 M.format_modifications = function(lsp_client, bufnr, config)
   local bufname = vim.fn.bufname(bufnr)
 
@@ -163,28 +180,12 @@ M.format_modifications_current_buffer = function()
   return M.format_modifications_buffer(bufnr)
 end
 
-local function attach_prechecks(lsp_client, bufnr, config)
-  if not lsp_client.server_capabilities.documentRangeFormattingProvider then -- unsupported server
-    return "client " .. lsp_client.name .. " does not have a document range formatting provider"
-  end
-
-  if vcs[config.vcs] == nil then -- unsupported VCS
-    return "VCS " .. config.vcs .. " isn't supported"
-  end
-
-  if config.diff_options ~= nil then -- old option, report deprecated
-    return "diff_options is deprecated, use diff_callback instead"
-  end
-
-  return nil
-end
-
 M.attach = function(lsp_client, bufnr, provided_config)
   provided_config = vim.F.if_nil(provided_config, {})
   local config = vim.tbl_extend("force", base_config, provided_config)
 
   -- pre-flight checks
-  local err = attach_prechecks(lsp_client, bufnr, config)
+  local err = prechecks(lsp_client, bufnr, config)
   if err ~= nil then
     util.notify(
       "failed checks: " .. err,
