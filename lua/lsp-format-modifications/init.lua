@@ -38,7 +38,33 @@ local base_config = {
   experimental_empty_line_handling = false
 }
 
+local function prechecks(lsp_client, bufnr, config)
+  if not lsp_client.server_capabilities.documentRangeFormattingProvider then -- unsupported server
+    return "client " .. lsp_client.name .. " does not have a document range formatting provider"
+  end
+
+  if vcs[config.vcs] == nil then -- unsupported VCS
+    return "VCS " .. config.vcs .. " isn't supported"
+  end
+
+  if config.diff_options ~= nil then -- old option, report deprecated
+    return "diff_options is deprecated, use diff_callback instead"
+  end
+
+  return nil
+end
+
+
 M.format_modifications = function(lsp_client, bufnr, config)
+  local err = prechecks(lsp_client, bufnr, config)
+  if err ~= nil then
+    util.notify(
+      "failed checks: " .. err,
+      vim.log.levels.ERROR
+    )
+    return false
+  end
+
   local bufname = vim.fn.bufname(bufnr)
 
   local vcs_client = vcs[config.vcs]:new()
@@ -49,7 +75,7 @@ M.format_modifications = function(lsp_client, bufnr, config)
       err .. ", doing nothing",
       vim.log.levels.WARN
     )
-    return
+    return false
   end
 
   local file_info = vcs_client:file_info(bufname)
@@ -60,13 +86,13 @@ M.format_modifications = function(lsp_client, bufnr, config)
       id = lsp_client.id,
       bufnr = bufnr
     }
-    return
+    return true
   end
 
   if file_info.has_conflicts then
     -- the file is marked as conflicted, so it probably has conflict markers.
     -- don't do anything to avoid screwing things up.
-    return
+    return true
     -- TODO: we should probably calculate the diff between the file on-disk and
     -- the common ancestor here
   end
@@ -77,7 +103,7 @@ M.format_modifications = function(lsp_client, bufnr, config)
       "failed to get comparee, " .. err .. " -- consider raising a GitHub issue",
       vim.log.levels.ERROR
     )
-    return
+    return false
   end
 
   local comparee_content = table.concat(comparee_lines, "\n")
@@ -140,9 +166,7 @@ M.format_modifications = function(lsp_client, bufnr, config)
   end
 end
 
-M.format_modifications_current_buffer = function()
-  local bufnr = vim.fn.bufnr("%") -- work on the current buffer
-
+M.format_modifications_buffer = function(bufnr)
   local ctx = vim.b[bufnr].lsp_format_modifications_context
   if ctx == nil then
     -- ... attaching to the buffer has either not been performed via attach, or
@@ -151,29 +175,23 @@ M.format_modifications_current_buffer = function()
       "no supported LSP clients attached to buffer, nothing to do",
       vim.log.levels.WARN
     )
-    return
+    return false
   end
 
   for client_id, config in pairs(ctx) do
     local lsp_client = vim.lsp.get_client_by_id(tonumber(client_id))
-    M.format_modifications(lsp_client, bufnr, config)
+    local success = M.format_modifications(lsp_client, bufnr, config)
+    if not success then
+      return false
+    end
   end
+
+  return true
 end
 
-local function attach_prechecks(lsp_client, bufnr, config)
-  if not lsp_client.server_capabilities.documentRangeFormattingProvider then -- unsupported server
-    return "client " .. lsp_client.name .. " does not have a document range formatting provider"
-  end
-
-  if vcs[config.vcs] == nil then -- unsupported VCS
-    return "VCS " .. config.vcs .. " isn't supported"
-  end
-
-  if config.diff_options ~= nil then -- old option, report deprecated
-    return "diff_options is deprecated, use diff_callback instead"
-  end
-
-  return nil
+M.format_modifications_current_buffer = function()
+  local bufnr = vim.fn.bufnr("%") -- work on the current buffer
+  return M.format_modifications_buffer(bufnr)
 end
 
 M.attach = function(lsp_client, bufnr, provided_config)
@@ -181,13 +199,13 @@ M.attach = function(lsp_client, bufnr, provided_config)
   local config = vim.tbl_extend("force", base_config, provided_config)
 
   -- pre-flight checks
-  local err = attach_prechecks(lsp_client, bufnr, config)
+  local err = prechecks(lsp_client, bufnr, config)
   if err ~= nil then
     util.notify(
       "failed checks: " .. err,
       vim.log.levels.ERROR
     )
-    return
+    return false
   end
 
   if config.format_on_save then
@@ -202,7 +220,9 @@ M.attach = function(lsp_client, bufnr, provided_config)
       {
         group = augroup_id,
         buffer = bufnr,
-        callback = M.format_modifications_current_buffer,
+        callback = function()
+          M.format_modifications(lsp_client, bufnr, config)
+        end,
       }
     )
   end
@@ -218,6 +238,8 @@ M.attach = function(lsp_client, bufnr, provided_config)
     M.format_modifications_current_buffer,
     {}
   )
+
+  return true
 end
 
 return M
