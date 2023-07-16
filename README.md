@@ -47,21 +47,61 @@ Plug 'joechrisellis/lsp-format-modifications.nvim'
 
 ## Configuration and usage
 
-In your [neovim/nvim-lspconfig][nvim-lspconfig] `on_attach` function:
+In terms of basic usage:
+
+```lua
+require"lsp-format-modifications".format_modifications(<lsp-client>, <bufnr>, <config>)
+```
+
+... will format the modifications in the buffer with ID `<bufnr>` using LSP
+client `<lsp-client>`, according to the options specified in `<config>`.
+
+For convenience, you may choose to create a user command that does this for
+you. For example, in your LSP `on_attach` function:
 
 ```lua
 local on_attach = function(client, bufnr)
   -- your usual configuration — options, keymaps, etc
   -- ...
 
-  local lsp_format_modifications = require"lsp-format-modifications"
-  lsp_format_modifications.attach(client, bufnr, { format_on_save = false })
+  vim.api.nvim_buf_create_user_command(
+    bufnr,
+    "FormatModifications",
+    function()
+      local lsp_format_modifications = require"lsp-format-modifications"
+      lsp_format_modifications.format_modifications(client, bufnr)
+    end,
+    {}
+  )
 end
 ```
 
-You can then use `:FormatModifications` to format modified text regions in the
-current buffer (or, set `format_on_save` to `true` to automatically format
-changed regions on save).
+If you'd prefer to instead format-on-save, try:
+
+```lua
+local on_attach = function(client, bufnr)
+  -- your usual configuration — options, keymaps, etc
+  -- ...
+
+  local augroup_id = vim.api.nvim_create_augroup(
+    "FormatModificationsDocumentFormattingGroup",
+    { clear = false }
+  )
+  vim.api.nvim_clear_autocmds({ group = augroup_id, buffer = bufnr })
+
+  vim.api.nvim_create_autocmd(
+    { "BufWritePre" },
+    {
+      group = augroup_id,
+      buffer = bufnr,
+      callback = function()
+        local lsp_format_modifications = require"lsp-format-modifications"
+        lsp_format_modifications.format_modifications(client, bufnr)
+      end,
+    }
+  )
+end
+```
 
 ### Options
 
@@ -78,11 +118,6 @@ local config = {
   -- The callback that is invoked to actually do the formatting on the changed
   -- hunks. Defaults to vim.lsp.buf.format (requires Neovim ≥ 0.8).
   format_callback = vim.lsp.buf.format,
-
-  -- If set to true, an autocommand will be created to automatically format
-  -- modifications on save. Defaults to false. This is provided merely for
-  -- convenience so that you don't have to create the autocommand yourself.
-  format_on_save = false,
 
   -- The VCS to use. Possible options are: "git", "hg". Defaults to "git".
   vcs = "git",
