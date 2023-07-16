@@ -56,6 +56,8 @@ end
 
 
 M.format_modifications = function(lsp_client, bufnr, config)
+  config = vim.tbl_extend("force", base_config, vim.F.if_nil(config, {}))
+
   local err = prechecks(lsp_client, bufnr, config)
   if err ~= nil then
     util.notify(
