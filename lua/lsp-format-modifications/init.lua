@@ -62,7 +62,7 @@ M.format_modifications = function(lsp_client, bufnr, config)
       "failed checks: " .. err,
       vim.log.levels.ERROR
     )
-    return false
+    return { success = false }
   end
 
   local bufname = vim.fn.bufname(bufnr)
@@ -75,7 +75,7 @@ M.format_modifications = function(lsp_client, bufnr, config)
       err .. ", doing nothing",
       vim.log.levels.WARN
     )
-    return false
+    return { success = false }
   end
 
   local file_info = vcs_client:file_info(bufname)
@@ -86,13 +86,13 @@ M.format_modifications = function(lsp_client, bufnr, config)
       id = lsp_client.id,
       bufnr = bufnr
     }
-    return true
+    return { success = true }
   end
 
   if file_info.has_conflicts then
     -- the file is marked as conflicted, so it probably has conflict markers.
     -- don't do anything to avoid screwing things up.
-    return true
+    return { success = true }
     -- TODO: we should probably calculate the diff between the file on-disk and
     -- the common ancestor here
   end
@@ -103,7 +103,7 @@ M.format_modifications = function(lsp_client, bufnr, config)
       "failed to get comparee, " .. err .. " -- consider raising a GitHub issue",
       vim.log.levels.ERROR
     )
-    return false
+    return { success = false }
   end
 
   local comparee_content = table.concat(comparee_lines, "\n")
@@ -175,18 +175,18 @@ M.format_modifications_buffer = function(bufnr)
       "no supported LSP clients attached to buffer, nothing to do",
       vim.log.levels.WARN
     )
-    return false
+    return { success = false }
   end
 
   for client_id, config in pairs(ctx) do
     local lsp_client = vim.lsp.get_client_by_id(tonumber(client_id))
     local success = M.format_modifications(lsp_client, bufnr, config)
     if not success then
-      return false
+      return { success = false }
     end
   end
 
-  return true
+  return { success = true }
 end
 
 M.format_modifications_current_buffer = function()
@@ -205,7 +205,7 @@ M.attach = function(lsp_client, bufnr, provided_config)
       "failed checks: " .. err,
       vim.log.levels.ERROR
     )
-    return false
+    return { success = false }
   end
 
   if config.format_on_save then
@@ -239,7 +239,7 @@ M.attach = function(lsp_client, bufnr, provided_config)
     {}
   )
 
-  return true
+  return { success = true }
 end
 
 return M
