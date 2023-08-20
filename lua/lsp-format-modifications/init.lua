@@ -166,6 +166,8 @@ M.format_modifications = function(lsp_client, bufnr, config)
 
     ::next_diff::
   end
+
+  return { success = true }
 end
 
 M.format_modifications_buffer = function(bufnr)
