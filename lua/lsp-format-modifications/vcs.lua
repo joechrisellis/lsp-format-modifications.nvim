@@ -67,6 +67,10 @@ function GitClient:relativize(pathstr)
   return absolute_pathstr:sub(#self.repository_root + #Path.path.sep + 1)
 end
 
+function GitClient:readlink(pathstr)
+  return io.popen('readlink -f ' .. pathstr):read()
+end
+
 function GitClient:file_info(pathstr)
   local result = cmd{
     command = "git",
@@ -78,7 +82,7 @@ function GitClient:file_info(pathstr)
       "--others",
       "--exclude-standard",
       "--eol",
-      self:relativize(pathstr)
+      self:relativize(self:readlink(pathstr))
     }
   }
 
@@ -117,7 +121,7 @@ function GitClient:get_comparee_lines(pathstr)
   local result = cmd{
     command = "git",
     cwd = self.repository_root,
-    args = { "--no-pager", "--literal-pathspecs", "show", ":0:./" .. self:relativize(pathstr) }
+    args = { "--no-pager", "--literal-pathspecs", "show", ":0:./" .. self:relativize(self:readlink(pathstr)) }
   }
 
   if result.exitcode ~= 0 then
