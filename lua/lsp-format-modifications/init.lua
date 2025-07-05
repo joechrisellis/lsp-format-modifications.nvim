@@ -198,7 +198,13 @@ M.format_modifications_current_buffer = function()
   return M.format_modifications_buffer(bufnr)
 end
 
+-- DEPRECATED: see README.md for recommended usage
 M.attach = function(lsp_client, bufnr, provided_config)
+  util.notify(
+    "attach is deprecated, see README.md for recommended usage",
+    vim.log.levels.INFO
+  )
+
   provided_config = vim.F.if_nil(provided_config, {})
   local config = vim.tbl_extend("force", base_config, provided_config)
 
