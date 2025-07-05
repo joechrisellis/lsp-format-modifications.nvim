@@ -211,4 +211,48 @@ end
 
 M.hg = HgClient
 
+local LocalClient = {}
+
+function LocalClient:new(o)
+  o = o or {}
+  setmetatable(o, self)
+  self.__index = self
+  return o
+end
+
+function LocalClient:init(pathstr)
+  -- check if file exists
+  local file = io.open(pathstr, "r")
+  if not file then
+    return "file does not exist"
+  end
+  file:close()
+  return nil
+end
+
+function LocalClient:relativize(pathstr)
+  return pathstr
+end
+
+function LocalClient:file_info(pathstr)
+  return {
+    is_tracked = true,
+    relpath = pathstr,
+    mode_bits = "100644",
+    object_name = "file",
+    i_crlf = false,
+    w_crlf = false,
+  }
+end
+
+function LocalClient:get_comparee_lines(pathstr)
+  local lines = {}
+  for line in io.lines(pathstr) do
+    table.insert(lines, line)
+  end
+  return lines
+end
+
+M.localc = LocalClient
+
 return M
