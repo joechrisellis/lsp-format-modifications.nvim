@@ -127,6 +127,16 @@ local config = {
 }
 ```
 
+### Logging and error messages
+
+`lsp-format-modifications.nvim` will occasionally log via `vim.notify()`. You
+can control what gets logged with the following global variables:
+
+```lua
+vim.g.lsp_format_modifications_silence = true -- to silence all logging
+vim.g.lsp_format_modifications_logleve = vim.log.levels.WARN -- only log at WARN severity or above
+```
+
 ## Caveats and issues
 
 **Please raise an issue if something is wrong — but read this section first.**
