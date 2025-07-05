@@ -26,8 +26,6 @@ find an analog for in Neovim. Hence, this plugin!
 
 ## Requirements
 
-- **Neovim ≥0.8 is required**. Neovim 0.8 has a more flexible API for LSP
-  formatting, which this plugin leverages.
 - Any LSP server that you want to use with this plugin must support the
   [`DocumentRangeFormattingProvider` server
   capability][document-range-formatting-provider-capability] —
