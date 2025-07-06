@@ -54,62 +54,49 @@ local function prechecks(lsp_client, bufnr, config)
   return nil
 end
 
+-- Format all modified ranges in a single LSP call using
+-- documentRangesFormattingProvider (LSP 3.18+). This can be more efficient for
+-- large files, and means that we can offload line-number-offsetting to the LSP
+-- server instead of doing it in this plugin.
+local function format_modifications_bulk(lsp_client, bufnr, config, comparee_content)
+  local buf_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  local buf_content = table.concat(buf_lines, "\n")
+  local hunks = config.diff_callback(comparee_content, buf_content)
 
-M.format_modifications = function(lsp_client, bufnr, config)
-  config = vim.tbl_extend("force", base_config, vim.F.if_nil(config, {}))
+  -- Collect all ranges that need formatting
+  local ranges = {}
+  for _, hunk in ipairs(hunks) do
+    local old_start, old_count, new_start, new_count = unpack(hunk)
+    if new_count == 0 then -- lines were removed, nothing to do for this hunk
+      goto next_hunk
+    end
 
-  local err = prechecks(lsp_client, bufnr, config)
-  if err ~= nil then
-    util.notify(
-      "failed checks: " .. err,
-      vim.log.levels.ERROR
-    )
-    return { success = false }
+    local start_line, end_line = new_start, new_start + new_count - 1
+    local start_col, end_col = 0, #buf_lines[end_line] - 1
+
+    table.insert(ranges, {
+      start = { start_line, start_col },
+      ["end"] = { end_line, end_col }
+    })
+
+    ::next_hunk::
   end
 
-  local bufname = vim.fn.bufname(bufnr)
-
-  local vcs_client = vcs[config.vcs]:new()
-
-  local err = vcs_client:init(bufname)
-  if err ~= nil then
-    util.notify(
-      err .. ", doing nothing",
-      vim.log.levels.WARN
-    )
-    return { success = false }
-  end
-
-  local file_info = vcs_client:file_info(bufname)
-  if not(file_info.is_tracked) then
-    -- easiest case: the file is new, so skip the whole dance and format
-    -- everything
+  -- Format all ranges at once if we have any
+  if #ranges > 0 then
     config.format_callback{
       id = lsp_client.id,
-      bufnr = bufnr
+      bufnr = bufnr,
+      range = ranges
     }
-    return { success = true }
   end
+end
 
-  if file_info.has_conflicts then
-    -- the file is marked as conflicted, so it probably has conflict markers.
-    -- don't do anything to avoid screwing things up.
-    return { success = true }
-    -- TODO: we should probably calculate the diff between the file on-disk and
-    -- the common ancestor here
-  end
-
-  local comparee_lines, err = vcs_client:get_comparee_lines(bufname)
-  if err ~= nil then
-    util.notify(
-      "failed to get comparee, " .. err .. " -- consider raising a GitHub issue",
-      vim.log.levels.ERROR
-    )
-    return { success = false }
-  end
-
-  local comparee_content = table.concat(comparee_lines, "\n")
-
+-- Format modified ranges one at a time using documentRangeFormattingProvider.
+-- This is used when the server doesn't support bulk ranges formatting (most
+-- servers). After each range is formatted, we recalculate diffs since
+-- formatting may invalidate remaining hunks.
+local function format_modifications_iterative(lsp_client, bufnr, config, comparee_content)
   local done = false
   while not(done) do
     done = true
@@ -165,6 +152,72 @@ M.format_modifications = function(lsp_client, bufnr, config)
     end
 
     ::next_diff::
+  end
+end
+
+M.format_modifications = function(lsp_client, bufnr, config)
+  config = vim.tbl_extend("force", base_config, vim.F.if_nil(config, {}))
+
+  local err = prechecks(lsp_client, bufnr, config)
+  if err ~= nil then
+    util.notify(
+      "failed checks: " .. err,
+      vim.log.levels.ERROR
+    )
+    return { success = false }
+  end
+
+  local bufname = vim.fn.bufname(bufnr)
+
+  local vcs_client = vcs[config.vcs]:new()
+
+  local err = vcs_client:init(bufname)
+  if err ~= nil then
+    util.notify(
+      err .. ", doing nothing",
+      vim.log.levels.WARN
+    )
+    return { success = false }
+  end
+
+  local file_info = vcs_client:file_info(bufname)
+  if not (file_info.is_tracked) then
+    -- easiest case: the file is new, so skip the whole dance and format
+    -- everything
+    config.format_callback {
+      id = lsp_client.id,
+      bufnr = bufnr
+    }
+    return { success = true }
+  end
+
+  if file_info.has_conflicts then
+    -- the file is marked as conflicted, so it probably has conflict markers.
+    -- don't do anything to avoid screwing things up.
+    return { success = true }
+    -- TODO: we should probably calculate the diff between the file on-disk and
+    -- the common ancestor here
+  end
+
+  local comparee_lines, err = vcs_client:get_comparee_lines(bufname)
+  if err ~= nil then
+    util.notify(
+      "failed to get comparee, " .. err .. " -- consider raising a GitHub issue",
+      vim.log.levels.ERROR
+    )
+    return { success = false }
+  end
+
+  local comparee_content = table.concat(comparee_lines, "\n")
+
+  local buf_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  local buf_content = table.concat(buf_lines, "\n")
+
+  local rangeFormattingProvider = lsp_client.server_capabilities.documentRangeFormattingProvider
+  if type(rangeFormattingProvider) == "table" and rangeFormattingProvider.rangesSupport then
+    format_modifications_bulk(lsp_client, bufnr, config, comparee_content)
+  else
+    format_modifications_iterative(lsp_client, bufnr, config, comparee_content)
   end
 
   return { success = true }
