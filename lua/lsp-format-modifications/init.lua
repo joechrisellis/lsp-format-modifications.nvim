@@ -72,6 +72,20 @@ local function format_modifications_bulk(lsp_client, bufnr, config, comparee_con
     end
 
     local start_line, end_line = new_start, new_start + new_count - 1
+
+    if config.experimental_empty_line_handling then
+      while start_line ~= end_line and buf_lines[start_line] == "" do
+        start_line = start_line + 1
+      end
+      while start_line ~= end_line and buf_lines[end_line] == "" do
+        end_line = end_line - 1
+      end
+
+      if buf_lines[start_line] == "" then
+        goto next_hunk
+      end
+    end
+
     local start_col, end_col = 0, #buf_lines[end_line] - 1
 
     table.insert(ranges, {
