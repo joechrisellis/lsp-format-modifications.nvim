@@ -210,9 +210,6 @@ M.format_modifications = function(lsp_client, bufnr, config)
 
   local comparee_content = table.concat(comparee_lines, "\n")
 
-  local buf_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-  local buf_content = table.concat(buf_lines, "\n")
-
   local rangeFormattingProvider = lsp_client.server_capabilities.documentRangeFormattingProvider
   if type(rangeFormattingProvider) == "table" and rangeFormattingProvider.rangesSupport then
     format_modifications_bulk(lsp_client, bufnr, config, comparee_content)
