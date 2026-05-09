@@ -194,7 +194,15 @@ M.format_modifications = function(lsp_client, bufnr, config)
     return { success = false }
   end
 
-  local file_info = vcs_client:file_info(bufname)
+  local file_info, err = vcs_client:file_info(bufname)
+  if err ~= nil then
+    util.notify(
+      "failed to get file information, " .. err .. " -- consider raising a GitHub issue",
+      vim.log.levels.ERROR
+    )
+    return { success = false }
+  end
+
   if not (file_info.is_tracked) then
     -- easiest case: the file is new, so skip the whole dance and format
     -- everything
