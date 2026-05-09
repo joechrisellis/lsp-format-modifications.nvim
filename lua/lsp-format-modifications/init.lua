@@ -17,7 +17,9 @@ local base_config = {
   -- the callback used to compute a diff between the comparee and the buffer
   -- content
   diff_callback = function(comparee_content, buf_content)
-    return vim.diff(
+    -- vim.diff was renamed to vim.text.diff in Neovim 0.12
+    local diff = (vim.text and vim.text.diff) or vim.diff
+    return diff(
       comparee_content,
       buf_content,
       M.default_diff_opts
