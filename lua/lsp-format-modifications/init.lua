@@ -41,7 +41,7 @@ local base_config = {
 }
 
 local function prechecks(lsp_client, bufnr, config)
-  if not lsp_client.supports_method("textDocument/rangeFormatting", bufnr) then -- unsupported server
+  if not lsp_client:supports_method("textDocument/rangeFormatting", bufnr) then -- unsupported server
     return "client " .. lsp_client.name .. " does not have a document range formatting provider"
   end
 
